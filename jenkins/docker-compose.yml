@@ -1,0 +1,42 @@
+version: "3.6"
+
+networks:
+  net:
+
+volumes:
+  data:
+  docker-cache:
+  docker-certs:
+
+services:
+  docker:
+    image: docker:dind
+    restart: always
+    privileged: true
+    volumes:
+      - docker-certs:/certs/client
+      - docker-cache:/var/lib/docker
+      - data:/var/jenkins_home
+      - /etc/docker/daemon.json:/etc/docker/daemon.json
+      # - "$HOME":/home
+    environment:
+      - DOCKER_TLS_CERTDIR=/certs
+    networks:
+      net:
+        aliases:
+          - docker
+
+  blueocean:
+    image: jenkinsci/blueocean
+    restart: always
+    volumes:
+      - docker-certs:/certs/client
+      - data:/var/jenkins_home
+      # - "$HOME":/home
+    environment:
+      - TZ=Asia/Shanghai
+      - DOCKER_CERT_PATH=/certs/client
+      - DOCKER_TLS_VERIFY=1
+      - DOCKER_HOST=tcp://docker:2376
+    networks:
+      - net

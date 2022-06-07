@@ -1,0 +1,16 @@
+version: '3.6'
+
+volumes:
+  nexus-data:
+
+services:
+  # get admin password at first time
+  # docker-compose exec -T nexus cat /nexus-data/admin.password
+  nexus:
+    image: sonatype/nexus3
+    volumes:
+      - nexus-data:/nexus-data 
+    ports:
+      - '8081:8081'
+      - '5001:5001'
+

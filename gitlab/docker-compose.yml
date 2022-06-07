@@ -1,0 +1,18 @@
+version: "3.6"
+
+services:
+  web:
+    image: 'gitlab/gitlab-ce:latest'
+    restart: always
+    hostname: 'gitlab.example.com'
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://your-damain'
+        # Add any other gitlab.rb configuration here, each on its own line
+    ports:
+      - '8929:8929'
+    volumes:
+      # mount local directory to container
+      - '/srv/gitlab/config:/etc/gitlab'
+      - '/srv/gitlab/logs:/var/log/gitlab'
+      - '/srv/gitlab/data:/var/opt/gitlab'
