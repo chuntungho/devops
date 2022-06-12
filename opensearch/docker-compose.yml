@@ -7,7 +7,7 @@ volumes:
 networks:
   opensearch-net:
 
-// refer to https://opensearch.org/
+# refer to https://opensearch.org/
 services:
   # increase max_map_count to fix the issue that vm.max_map_count is too low.
   # sysctl -w vm.max_map_count=262144

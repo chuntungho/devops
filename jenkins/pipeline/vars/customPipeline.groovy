@@ -130,7 +130,7 @@ def call(Map config) {
                     script {
                         // java project
                         if (fileExists("${MODULE_DIR}/pom.xml")) {
-                            docker.image('maven:3-alpine').inside("-v $HOME/.m2:/root/.m2 -u root:root") {
+                            docker.image('maven:3.8-jdk-8-slim').inside("-v $HOME/.m2:/root/.m2 -u root:root") {
                                 sh "mvn --version"
                                 sh MAVEN_CMD
                             }
@@ -168,7 +168,7 @@ def call(Map config) {
                         }
 
                         // push image to registry with user/password
-                        docker.withRegistry(env.REGISTRY_URL, env.REGISTRY_CREDENTIALS_ID) {
+                        docker.withRegistry("${REGISTRY_URL}", "${REGISTRY_CREDENTIALS_ID}") {
                             def image = docker.build("${IMAGE_WITH_TAG}", "-f ${dockerFile} ${MODULE_DIR}")
                             image.push()
                             if (env.CURRENT_ENV == 'prod') {
