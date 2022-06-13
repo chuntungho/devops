@@ -8,6 +8,23 @@
 // Required plugins:
 // - SSH Pipeline Steps: Remote publish
 
+/**
+ * Default Parameter: 
+ *  [gitUrl: null,
+ *   gitCredentialsId: 'git-for-jenkins',
+ *   registryUrl: env.REGISTRY_URL,
+ *   registryCredentialsId: 'docker-for-jenkins',
+ *   remoteHost: env.REMOTE_HOST,
+ *   remotePort: env.REMOTE_PORT,
+ *   remoteCredentialsId: 'ssh-for-jenkins',
+ *   currentEnv: 'test',
+ *   stackName: 'app',
+ *   organization: 'demo',
+ *   imageMapping: [],
+ *   nodeRunCmd: 'build',
+ *   cleanWorkspace: true
+ *  ]
+ */
 def call(Map config) {
     pipeline {
         agent any
@@ -193,6 +210,7 @@ def call(Map config) {
                         remote.name = "docker-manager"
                         remote.allowAnyHosts = true
                         remote.host = "${REMOTE_HOST}"
+						def fullImage = new URL(env.REGISTRY_URL).getAuthority() + '/' + env.IMAGE_WITH_TAG
 
                         withCredentials([sshUserPrivateKey(
                                 credentialsId: env.REMOTE_CREDENTIALS_ID,
@@ -204,8 +222,8 @@ def call(Map config) {
 
                             // pull image, update service for testing
                             // it is recommended to copy stack yml and re-deploy stack
-                            sshCommand remote: remote, command: "docker pull ${IMAGE_WITH_TAG}"
-                            sshCommand remote: remote, command: "docker service update --image ${IMAGE_WITH_TAG} ${SERVICE_NAME}"
+                            sshCommand remote: remote, command: "docker pull ${fullImage}"
+                            sshCommand remote: remote, command: "docker service update --image ${fullImage} ${SERVICE_NAME}"
                         }
                     }
                 }
@@ -213,9 +231,13 @@ def call(Map config) {
         }
 
         post {
-            // clean workspace
+            // clean workspace finally
             always {
-                cleanWs()
+			  script {
+			    if (config.getOrDefault('cleanWorkspace', true)) {
+                  cleanWs()
+				}
+			  }
             }
         }
     }
