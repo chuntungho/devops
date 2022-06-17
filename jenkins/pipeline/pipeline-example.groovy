@@ -5,9 +5,12 @@
 @Library('custom-library') _
 
 buildPipeline([
+        currentEnv: 'test',
+        stackName: 'app',
+        
         gitUrl: "your git url",
         registryUrl: "left blank to use docker hub",
-        stackName: 'app',
+        
         organization: 'demo',
         imageMapping: ['.' : 'test-image']
 ])
