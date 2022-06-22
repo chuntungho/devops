@@ -67,12 +67,12 @@ def call(Map config) {
             GIT_CREDENTIALS_ID = "${config.gitCredentialsId ?: 'git-for-jenkins'}"
 
             // docker registry config
-            REGISTRY_URL = "${config.registryUrl ?: env.REGISTRY_URL}"
+            REGISTRY_URL = config.getOrDefault('registryUrl', env.REGISTRY_URL)
             REGISTRY_CREDENTIALS_ID = "${config.registryCredentialsId ?: 'docker-for-jenkins'}"
 
             // remote config
-            REMOTE_HOST = "${config.remoteHost ?: env.REMOTE_HOST}"
-            REMOTE_PORT = "${config.remotePort ?: env.REMOTE_PORT}"
+            REMOTE_HOST = config.getOrDefault('remoteHost', env.REMOTE_HOST)
+            REMOTE_PORT = config.getOrDefault('remotePort', "${env.REMOTE_PORT ?: '22'}")
             REMOTE_CREDENTIALS_ID = "${config.remoteCredentialsId ?: 'ssh-for-jenkins'}"
 
             BRANCH_NAME = params.getOrDefault('GIT_LABEL', env.BRANCH_NAME)
@@ -241,7 +241,7 @@ def call(Map config) {
                         remote.name = "docker-manager"
                         remote.allowAnyHosts = true
                         remote.host = "${REMOTE_HOST}"
-                        remote.port = Integer.parseInt("${env.REMOTE_PORT ?: '22'}")
+                        remote.port = Integer.parseInt(env.REMOTE_PORT)
 						
                         def fullImage = new URL(env.REGISTRY_URL).getAuthority() + '/' + env.IMAGE_WITH_TAG
 
