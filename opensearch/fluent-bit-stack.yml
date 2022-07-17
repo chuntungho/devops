@@ -1,0 +1,25 @@
+version: '3.6'
+volumes:
+  fluent-bit-data:
+  
+services:
+  # just parse and forward logs to fluentd
+  fluent-bit:
+    image: chuntungho/fluent-bit-docker
+    volumes:
+      - fluent-bit-data:/fluent-bit/log
+      - /var/lib/docker/containers:/var/lib/docker/containers
+    command:
+      - -c 
+      - /fluent-bit/etc/fluent-bit.conf
+      - -o
+      - 'forward://<fluentd-server-ip>:24224'
+    networks:
+      - apm-net
+    deploy:
+      mode: global
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "64m"
+        max-file: "8"
