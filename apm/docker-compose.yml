@@ -2,7 +2,6 @@ version: '3.6'
 volumes:
   grafana-data:
   prometheus-data:
-  influxdb-data:
 
 services:
   # /etc/prometheus/prometheus.yml
@@ -41,7 +40,7 @@ services:
   nginx-exporter:
     image: nginx/nginx-prometheus-exporter
     command:
-      - -nginx.scrape-uri=http://nginx-ip/stub_status
+      - -nginx.scrape-uri=http://<nginx-server-ip>/stub_status
   
   # 9121
   redis-exporter:
