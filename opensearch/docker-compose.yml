@@ -3,6 +3,7 @@ version: '3'
 volumes:
   opensearch-data1:
   opensearch-data2:
+  fluentd-log:
 
 networks:
   opensearch-net:
@@ -75,6 +76,7 @@ services:
     build: ./fluentd
     volumes:
       - ./fluentd/fluentd.conf:/fluentd/etc/fluent.conf
+      - fluentd-log:/fluentd/log
     networks:
       - opensearch-net
     ports:
