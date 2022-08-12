@@ -1,0 +1,33 @@
+# https://spring.io/guides/topicals/spring-boot-docker
+# based on openjdk8 hotspot
+# To use custom fonts, change image version to `slim` and copy fonts to ` /usr/share/fonts`
+FROM adoptopenjdk/openjdk8:alpine-slim
+LABEL version="1.0" \
+    description="Spring application images built from this Dockerfile" \
+    maintainer="ho@chuntung.com"
+
+# multi-arguments available after 20.10
+ARG SOURCE_FILE="target/*.jar"
+ARG TARGET_PATH="app"
+
+ENV JAVA_OPTS="-server -Xms512m -Xmx512m" APP_ENV="test" CONSUL_HOST="consul-server"
+
+# use target path as workdir
+WORKDIR /opt/$TARGET_PATH
+
+RUN printf '#!/bin/sh\n\
+set -x\n\
+exec java \
+-Dfile.encoding=UTF-8 \
+-Duser.timezone=GMT+8 \
+-Djava.awt.headless=true \
+-Djava.net.preferIPv4Stack=true \
+-XX:+HeapDumpOnOutOfMemoryError \
+-XX:HeapDumpPath=./ \
+${JAVA_OPTS} \
+-jar app.jar $@' >> entrypoint.sh && chmod 755 entrypoint.sh
+
+ENTRYPOINT ["./entrypoint.sh"]
+
+# the mutable line at the end
+COPY ${SOURCE_FILE} app.jar

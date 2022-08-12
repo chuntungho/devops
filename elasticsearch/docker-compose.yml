@@ -1,0 +1,23 @@
+version: '3.6'
+
+volumes:
+  es-dev-data:
+
+services:
+  # es for dev
+  elastic-search:
+    image: middleware/elasticsearch:7.9-custom
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 9200:9200
+    environment:
+      - "discovery.type=single-node"
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      -  es-dev-data:/usr/share/elasticsearch/data

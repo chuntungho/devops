@@ -1,0 +1,6 @@
+FROM nginx:alpine
+LABEL version="1.0" \
+    description="Front-end vue images built from this Dockerfile" \
+    maintainer="ho@chuntung.com"
+
+COPY dist /usr/share/nginx/html

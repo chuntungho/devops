@@ -1,0 +1,59 @@
+version: '3.6'
+
+# use external network
+networks:
+  repo-net:
+    external: true
+
+secrets:
+  erlang-cookie:
+    file: ./erlang_cookie.txt
+
+volumes:
+  rabbitmq-data:
+
+services:
+  # https://www.rabbitmq.com/clustering.html#creating
+  # ports: 5672, 15672
+  rabbit-peer-a: &rabbit-peer
+    image: "${REGISTRY_URL}middleware/rabbitmq:3.8-custom"
+    networks:
+      repo-net:
+        aliases:
+          - rabbit-server
+    environment:
+      RABBITMQ_NODENAME: rabbit@rabbit-peer-a
+    volumes:
+      - rabbitmq-data::/var/lib/rabbitmq
+    secrets:
+      - source: erlang-cookie
+        target: /var/lib/rabbitmq/.erlang.cookie
+        uid: '999'
+        gid: '999'
+        mode: 0600
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.rabbit-peer-name==rabbit-peer-a"
+
+  rabbit-peer-b:
+    <<: *rabbit-peer
+    ports:
+      - target: 15672
+        published: 15678
+        mode: host
+    environment:
+      RABBITMQ_NODENAME: rabbit@rabbit-peer-b
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.rabbit-peer-name==rabbit-peer-b"
+
+  rabbit-peer-c:
+    <<: *rabbit-peer
+    environment:
+      RABBITMQ_NODENAME: rabbit@rabbit-peer-c
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.rabbit-peer-name==rabbit-peer-c"

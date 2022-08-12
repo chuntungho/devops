@@ -1,0 +1,94 @@
+version: '3.6'
+
+# use external network
+networks:
+  repo-net:
+    external: true
+
+volumes:
+  elasticsearch-data:
+
+services:
+  es-peer-a:
+    image: "${REGISTRY_URL}middleware/elasticsearch:${ES_TAG}"
+    environment:
+      - node.name=es-peer-a
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es-peer-b,es-peer-c
+      - cluster.initial_master_nodes=es-peer-a,es-peer-b,es-peer-c
+      # ulimits isn't currently supported in swarm mode, so disable memory lock
+      # https://github.com/moby/moby/issues/40639
+      - bootstrap.memory_lock=false
+      # TODO set half of memory
+      - "ES_JAVA_OPTS=-Xms8G -Xmx8G"
+    networks:
+      repo-net:
+        aliases:
+          - es-server
+    # TODO just for init
+    ports:
+      - target: 9200
+        published: 19200
+        mode: host
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.es-peer-name==es-peer-a"
+
+  es-peer-b:
+    image: "${REGISTRY_URL}middleware/elasticsearch:${ES_TAG}"
+    environment:
+      - node.name=es-peer-b
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es-peer-a,es-peer-c
+      - cluster.initial_master_nodes=es-peer-a,es-peer-b,es-peer-c
+      - bootstrap.memory_lock=false
+      - "ES_JAVA_OPTS=-Xms8G -Xmx8G"
+    networks:
+      repo-net:
+        aliases:
+          - es-server
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.es-peer-name==es-peer-b"
+
+  es-peer-c:
+    image: "${REGISTRY_URL}middleware/elasticsearch:${ES_TAG}"
+    environment:
+      - node.name=es-peer-c
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es-peer-a,es-peer-b
+      - cluster.initial_master_nodes=es-peer-a,es-peer-b,es-peer-c
+      - bootstrap.memory_lock=false
+      - "ES_JAVA_OPTS=-Xms8G -Xmx8G"
+    networks:
+      repo-net:
+        aliases:
+          - es-server
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.es-peer-name==es-peer-c"
+
+  es-cerebro:
+    image: lmenezes/cerebro
+    environment:
+      - CEREBRO_PORT=8080
+      - AUTH_TYPE=basic
+      - BASIC_AUTH_USER=admin
+      - BASIC_AUTH_PWD=cerebro
+    networks:
+      - repo-net
+    ports:
+      - 9201:8080
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.es-peer-name==es-peer-a"
