@@ -1,0 +1,35 @@
+- name: download mysql repo
+  shell: curl -o /opt/mysql57-community-release-el7-8.noarch.rpm  https://repo.mysql.com/mysql57-community-release-el7-8.noarch.rpm
+
+- name: install mysql repo
+  shell: rpm -ivh /opt/mysql57-community-release-el7-8.noarch.rpm
+
+- name: install mysql server
+  yum:
+    name: 'mysql-server'
+    state: present
+
+- name: copy config to master
+  template:
+    src: master.cnf.j2
+    dest: /etc/my.cnf
+  when: master is defined
+
+- name: copy config to slave
+  template:
+    src: slave.cnf.j2
+    dest: /etc/my.cnf
+  when: slave is defined
+
+- name: start mysqld service
+  systemd:
+    name: mysqld
+    state: started
+    enabled: true
+
+- name: get_mysql_passwd
+  shell: cat /var/log/mysqld.log | grep localhost | awk -F ':' '{print $4}' | cut -c 2-
+  register: mysql_init_passwd
+
+- name: alter_root_passwd
+  shell: mysqladmin -u root -p'{{ mysql_init_passwd.stdout }}' password '{{ mysql_root_password }}'

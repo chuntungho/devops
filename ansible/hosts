@@ -1,0 +1,13 @@
+[app_servers]
+app_manager ansible_ssh_host=172.20.13.11
+app_worker1 ansible_ssh_host=172.20.13.12
+app_worker2 ansible_ssh_host=172.20.13.13
+
+[mysql_servers]
+mysql_master ansible_ssh_host=172.20.13.21 master=true server_id=1001
+mysql_slave ansible_ssh_host=172.20.13.22 slave=true server_id=1002
+
+[redis_servers]
+172.20.13.31
+172.20.13.32
+172.20.13.33

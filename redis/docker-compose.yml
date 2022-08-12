@@ -1,0 +1,18 @@
+version: '3.6'
+
+services:
+  instance-6001:
+    image: redis:5.0.9-alpine
+    restart: always
+    volumes:
+      - /var/redis/data-6001:/data
+    network_mode: host
+    command: ["redis-server", "--port 6001","--cluster-enabled yes", "--appendonly yes"]
+
+  instance-6002:
+    image: redis:5.0.9-alpine
+    restart: always
+    volumes:
+      - /var/redis/data-6002:/data
+    network_mode: host
+    command: ["redis-server", "--port 6002","--cluster-enabled yes", "--appendonly yes"]

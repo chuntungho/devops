@@ -1,0 +1,4 @@
+- hosts: [redis_servers, app_servers]
+  remote_user: root
+  roles:
+    - docker

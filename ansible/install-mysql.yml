@@ -1,0 +1,8 @@
+- hosts: mysql_servers
+  remote_user: root
+  vars_prompt:
+    - name: mysql_root_password
+      prompt: 'MySQL root password: '
+      private: no
+  roles:
+    - mysql

@@ -1,0 +1,20 @@
+- name: create redis dir
+  file:
+    path: /opt/redis
+    state: directory
+
+- name: create data dir for each port
+  file:
+    path: '/var/redis/data-{{ item }}'
+    state: directory
+  with_items:
+    - 6001
+    - 6002
+
+- name: copy docker-compose.yml
+  copy:
+    src: docker-compose.yml
+    dest: /opt/redis/docker-compose.yml
+
+- name: install redis
+  shell: cd /opt/redis && docker-compose up -d

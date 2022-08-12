@@ -1,0 +1,36 @@
+- name: install required packages
+  yum:
+    name: 'yum-utils'
+    state: present
+
+- name: add docker repo
+  shell: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+- name: install docker-ce
+  yum:
+    name: ['docker-ce', 'docker-ce-cli', 'containerd.io']
+    state: present
+
+- name: mkdir docker config dir
+  file:
+    path: /etc/docker
+    state: directory
+
+- name: copy docker config
+  copy:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+
+- name: install docker-compose
+  copy:
+     src: /usr/local/bin/docker-compose
+     dest: /usr/local/bin/docker-compose
+
+- name: chmod for docker-compose
+  shell: chmod +x /usr/local/bin/docker-compose
+
+- name: start docker service
+  systemd:
+    name: docker
+    state: started
+    enabled: true
