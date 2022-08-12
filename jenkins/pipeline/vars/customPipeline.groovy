@@ -79,8 +79,8 @@ def call(Map config) {
             MODULE_DIR = params.getOrDefault('MODULE_DIR', '.')
 
             ORGANIZATION = "${config.organization ?: 'demo'}"
-            // get image mapping or treat last path as image name
-            IMAGE_NAME = "${config.imageMapping?.get(env.MODULE_DIR) ?: env.MODULE_DIR.substring(env.MODULE_DIR.lastIndexOf('/') + 1)}"
+            // get image mapping or use base job name or treat last path as image name
+            IMAGE_NAME = "${(config.imageMapping ?: ['.' : env.JOB_BASE_NAME]).getOrDefault(env.MODULE_DIR, env.MODULE_DIR.substring(env.MODULE_DIR.lastIndexOf('/') + 1))}"
             IMAGE_WITH_TAG = "${ORGANIZATION}/${IMAGE_NAME}:${params.IMAGE_TAG}"
 
             // docker stack service name
@@ -88,12 +88,12 @@ def call(Map config) {
 
             // use aliyun mirror by default
             MAVEN_CENTRAL_MIRROR = "${env.MAVEN_CENTRAL_MIRROR ?: 'http://maven.aliyun.com/nexus/content/repositories/central/'}"
-			MAVEN_IMAGE = "${env.MAVEN_IMAGE ?: 'maven:3.8-jdk-8-slim'}"
+            MAVEN_IMAGE = "${env.MAVEN_IMAGE ?: 'maven:3.8-jdk-8-slim'}"
             MAVEN_CMD = "mvn -Duser.home=/var/maven -DskipTests -am clean package --projects ${MODULE_DIR}"
-			
+
             NODE_IMAGE = "${env.NODE_IMAGE ?: 'node:14.17-slim'}"
-			NODE_MIRROR = "${env.NODE_MIRROR ?: 'https://registry.npmjs.org/'}"
-			NODE_RUN_CMD = "${config.nodeRunCmd ?: 'build'}"
+            NODE_MIRROR = "${env.NODE_MIRROR ?: 'https://registry.npmjs.org/'}"
+            NODE_RUN_CMD = "${config.nodeRunCmd ?: 'build'}"
             NODE_CMD = "cd ${MODULE_DIR} && npm install --registry=${NODE_MIRROR} && npm run ${NODE_RUN_CMD}"
         }
 
@@ -202,11 +202,11 @@ def call(Map config) {
                             // default docker file
                             dockerFile = "${MODULE_DIR}/Dockerfile"
                         }
-						
-						// add .dockerignore if missing
-						dockerignore = null
-						if (!fileExists("${MODULE_DIR}/.dockerignore")) {
-						    dockerignore = "src/\ntarget/classes/\nnode_modules/"							
+                        
+                        // add .dockerignore if missing
+                        dockerignore = null
+                        if (!fileExists("${MODULE_DIR}/.dockerignore")) {
+                            dockerignore = "src/\ntarget/classes/\nnode_modules/"                           
                             writeFile file: "${MODULE_DIR}/.dockerignore", text: dockerignore, encoding: 'UTF-8'
                         }
 
@@ -218,11 +218,11 @@ def call(Map config) {
                                 image.push("latest")
                             }
                         }
-						
-						// remove added .dockerignore after building
-						if (dockerignore) {
-						    sh "rm ${MODULE_DIR}/.dockerignore"
-						}
+                        
+                        // remove added .dockerignore after building
+                        if (dockerignore) {
+                            sh "rm ${MODULE_DIR}/.dockerignore"
+                        }
                     }
                 }
             }
@@ -242,7 +242,7 @@ def call(Map config) {
                         remote.allowAnyHosts = true
                         remote.host = "${REMOTE_HOST}"
                         remote.port = Integer.parseInt(env.REMOTE_PORT)
-						
+                        
                         def fullImage = new URL(env.REGISTRY_URL).getAuthority() + '/' + env.IMAGE_WITH_TAG
 
                         withCredentials([sshUserPrivateKey(
