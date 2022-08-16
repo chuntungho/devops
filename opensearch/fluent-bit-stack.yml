@@ -12,8 +12,15 @@ services:
     command:
       - -c 
       - /fluent-bit/etc/fluent-bit.conf
+      # just forward to fluentd-server
       - -o
       - 'forward://<fluentd-server-ip>:24224'
+      # uncomment below to use in development env
+      # - -o opensearch
+      # - -p Host=opensearch-node1
+      # - -p Logstash_Format=true
+      # - -p Logstash_Prefix=fluent-bit
+      # - -p Suppress_Type_Name=On
     networks:
       - apm-net
     deploy:
