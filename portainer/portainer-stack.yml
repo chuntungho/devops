@@ -1,0 +1,40 @@
+version: '3.7'
+
+networks:
+  net:
+
+volumes:
+  portainer-data:
+
+services:
+  # https://www.portainer.io/installation/
+  agent:
+    image: portainer/agent
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
+    environment:
+      AGENT_SECRET: secret-token-for-agent
+    networks:
+      - net
+    deploy:
+      mode: global
+      placement:
+        constraints: [node.platform.os == linux]
+
+  portainer:
+    image: portainer/portainer-ce
+    command: -H tcp://tasks.agent:9001 --tlsskipverify
+    environment:
+      AGENT_SECRET: secret-token-for-agent
+    ports:
+      - "19000:9000"
+    volumes:
+      - portainer-data:/data
+    networks:
+      - net
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]

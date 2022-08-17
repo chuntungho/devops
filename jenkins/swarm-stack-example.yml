@@ -1,0 +1,45 @@
+version: '3.6'
+
+networks:
+  app-net:
+    external: true
+
+services:
+  # define app server template
+  app-server: &app-tmpl
+    image: image-with-tag
+    networks:
+      - app-net
+    environment:
+      APP_ENV: "${APP_ENV}"
+      JAVA_OPTS: "-server -Xms1g -Xmx1g"
+      MANAGEMENT_PORT: 18080
+    deploy:
+      replicas: 1
+      update_config:
+        order: start-first
+      placement:
+        constraints:
+          - "node.labels.app-server==true"
+    healthcheck:
+      test: [ "CMD", "curl", "http://localhost:18080/actuator/health" ]
+      interval: 20s
+      start_period: 120s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "64m"
+        max-file: "8"
+
+  gateway:
+    <<: *app-tmpl
+    image: image-with-tag
+    ports:
+      - target: 8080
+        published : 8080
+        mode: host
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - "node.labels.app-server==true"

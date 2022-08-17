@@ -1,0 +1,11 @@
+set $grey 0;
+
+# by ip
+if ($remote_addr = 10.10.1.0){
+  set $grey 1;
+}
+
+# by browser agent
+# if ($http_user_agent ~ "Android"){
+#   set $grey  1;
+# }

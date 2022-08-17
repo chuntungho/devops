@@ -1,0 +1,66 @@
+version: '3.6'
+
+networks:
+  app-net:
+    external: true
+
+volumes:
+  consul-data:
+
+configs:
+  git2consul-conf:
+    file: ./git2consul.json
+
+# https://stackoverflow.com/questions/54220374/consul-on-docker-swarm-with-spring-boot-clients
+services:
+  # ports: 8500
+  consul-peer-a: &consul-peer
+    image: "consul:1.11.5"
+    networks:
+      app-net:
+        aliases:
+          - consul-server
+    environment:
+      CONSUL_BIND_INTERFACE: eth0
+      # https://www.consul.io/docs/agent/options
+      CONSUL_LOCAL_CONFIG: '{"server": true,"bootstrap_expect": 3, "client_addr": "0.0.0.0", "disable_update_check": true}'
+    command: [ "agent", "-node", "consul-peer-a", "-retry-join", "consul-peer-b", "-retry-join", "consul-peer-c" ]
+    volumes:
+      - consul-data:/consul/data
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.consul-peer-name==consul-peer-a"
+
+  # enable ui
+  # expose 8500 for dev only
+  consul-peer-b:
+    <<: *consul-peer
+    ports:
+      - "8500:8500"
+    command: [ "agent", "-ui", "-node", "consul-peer-b", "-retry-join", "consul-peer-a","-retry-join", "consul-peer-c" ]
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.consul-peer-name==consul-peer-b"
+
+  consul-peer-c:
+    <<: *consul-peer
+    command: [ "agent", "-node", "consul-peer-c", "-retry-join", "consul-peer-a","-retry-join", "consul-peer-b" ]
+    deploy:
+      placement:
+        constraints:
+          - "node.labels.consul-peer-name==consul-peer-c"
+
+  git2consul-go:
+    image: chuntungho/git2consul-go
+    networks:
+      - app-net
+    configs:
+      - source: git2consul-conf
+        target: /etc/git2consul.json
+    command: ["-config", "/etc/git2consul.json", "-debug"]
+    deploy:
+      placement:
+        constraints:
+          - "node.role == manager"

@@ -1,0 +1,28 @@
+{
+  "repos": [
+    {
+      "name": "config",
+      "url": "https://git-repo",
+      "branches": [
+        "main"
+      ],
+      "source_root": "/config/",
+      "mount_point": "config/",
+      "skip_branch_name": true,
+      "skip_repo_name": true,
+      "credentials": {
+        "username": "git-user",
+        "password": "git-password"
+      },
+      "hooks": [
+        {
+          "type": "polling",
+          "interval": 180
+        }
+      ]
+    }
+  ],
+  "consul": {
+    "address": "consul-server:8500"
+  }
+}
