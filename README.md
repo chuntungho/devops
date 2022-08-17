@@ -22,4 +22,4 @@ Monitoring: Promethues + Grafana
 
 ## Middleware
 
-Redis + ElasticSearch + RabbitMQ
+Consul + Redis + ElasticSearch + RabbitMQ
