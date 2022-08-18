@@ -1,6 +1,14 @@
 version: '3.6'
 
 services:
+  # Create cluster manually
+  #
+  # docker run -i --rm redis:5.0.9-alpine redis-cli --cluster create \
+  # 172.20.13.10:6001 172.20.13.10:6002 \
+  # 172.20.13.11:6001 172.20.13.11:6002 \
+  # 172.20.13.12:6001 172.20.13.12:6002 \
+  # --cluster-replicas 1
+  #
   instance-6001:
     image: redis:5.0.9-alpine
     restart: always

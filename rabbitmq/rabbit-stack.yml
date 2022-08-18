@@ -15,6 +15,14 @@ volumes:
 services:
   # https://www.rabbitmq.com/clustering.html#creating
   # ports: 5672, 15672
+  #
+  # To join cluster by executing below commands in peer-b/peer-c container
+  #
+  # rabbitmqctl stop_app
+  # rabbitmqctl reset
+  # rabbitmqctl join_cluster rabbit@rabbit-peer-a
+  # rabbitmqctl start_app
+  #
   rabbit-peer-a: &rabbit-peer
     image: "${REGISTRY_URL}middleware/rabbitmq:3.8-custom"
     networks:
@@ -24,7 +32,7 @@ services:
     environment:
       RABBITMQ_NODENAME: rabbit@rabbit-peer-a
     volumes:
-      - rabbitmq-data::/var/lib/rabbitmq
+      - rabbitmq-data:/var/lib/rabbitmq
     secrets:
       - source: erlang-cookie
         target: /var/lib/rabbitmq/.erlang.cookie
