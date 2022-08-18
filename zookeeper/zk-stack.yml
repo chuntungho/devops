@@ -1,0 +1,48 @@
+version: '3.7'
+
+# docker network create -d overlay app-net
+networks:
+  app-net:
+    external: true
+
+# https://hub.docker.com/_/zookeeper
+services:
+  zoo1: &zoo-peer
+    image: zookeeper
+    # hostname required to avoid bind exception
+    hostname: zoo1
+    networks:
+      app-net:
+        aliases:
+          - zookeeper-server
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+
+  zoo2:
+    <<: *zoo-peer
+    hostname: zoo2
+    environment:
+      ZOO_MY_ID: 2
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+
+  zoo3:
+    <<: *zoo-peer
+    hostname: zoo3
+    environment:
+      ZOO_MY_ID: 3
+      ZOO_SERVERS: server.1=zoo1:2888:3888;2181 server.2=zoo2:2888:3888;2181 server.3=zoo3:2888:3888;2181
+
+  # https://hub.docker.com/r/fansys/zkui
+  zkui:
+    image: fansys/zkui
+    networks:
+      - app-net
+    ports:
+      - "19090:9090"
+    volumes:
+      - ./config.cfg:/var/app/config.cfg
+#    environment:
+#      ZKUI_ZK_SERVER: zookeeper-server:2181
+#      ZKUI_ADMIN_PW: admin
+#      ZKUI_USER_PW: pass
