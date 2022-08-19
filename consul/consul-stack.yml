@@ -6,6 +6,7 @@ networks:
 
 volumes:
   consul-data:
+  consul-client-data:
 
 configs:
   git2consul-conf:
@@ -15,7 +16,7 @@ configs:
 services:
   # ports: 8500
   consul-peer-a: &consul-peer
-    image: "consul:1.11.5"
+    image: "consul:1.11"
     networks:
       app-net:
         aliases:
@@ -32,12 +33,8 @@ services:
         constraints:
           - "node.labels.consul-peer-name==consul-peer-a"
 
-  # enable ui
-  # expose 8500 for dev only
   consul-peer-b:
     <<: *consul-peer
-    ports:
-      - "8500:8500"
     command: [ "agent", "-ui", "-node", "consul-peer-b", "-retry-join", "consul-peer-a","-retry-join", "consul-peer-c" ]
     deploy:
       placement:
@@ -51,6 +48,28 @@ services:
       placement:
         constraints:
           - "node.labels.consul-peer-name==consul-peer-c"
+
+  # Deploy consul client as sidecar in k8s, which is not supported in swarm.
+  # To work around, deploy consul client on each swarm node, connect to consul client (172.17.0.1) inside a container.
+  consul-client:
+    image: "consul:1.11"
+    networks:
+      app-net:
+    ports:
+      - target: 8500
+        published: 8500
+        mode: host
+    environment:
+      CONSUL_BIND_INTERFACE: eth0
+      CONSUL_LOCAL_CONFIG: '{"client_addr": "0.0.0.0", "disable_update_check": true}'
+    command: [ "agent", "-ui", "-retry-join", "consul-server" ]
+    volumes:
+      - consul-client-data:/consul/data
+    deploy:
+      mode: global
+      placement:
+        constraints:
+          - "node.labels.app-server==true"
 
   git2consul-go:
     image: chuntungho/git2consul-go
