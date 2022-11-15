@@ -37,6 +37,7 @@
  * Default Environment Variables:
  *   MAVEN_CENTRAL_MIRROR: 'http://maven.aliyun.com/nexus/content/repositories/central/'
  *   MAVEN_IMAGE: 'maven:3.8-jdk-8-slim'
+ *   NODE_MIRROR: 'https://registry.npmmirror.com'
  *   NODE_IMAGE: 'node:14.17-slim'
  */
 def call(Map config) {
@@ -92,7 +93,7 @@ def call(Map config) {
             MAVEN_CMD = "mvn -Duser.home=/var/maven -DskipTests -am clean package --projects ${MODULE_DIR}"
 
             NODE_IMAGE = "${env.NODE_IMAGE ?: 'node:14.17-slim'}"
-            NODE_MIRROR = "${env.NODE_MIRROR ?: 'https://registry.npmjs.org/'}"
+            NODE_MIRROR = "${env.NODE_MIRROR ?: 'https://registry.npmmirror.com'}"
             NODE_RUN_CMD = "${config.nodeRunCmd ?: 'build'}"
             NODE_CMD = "cd ${MODULE_DIR} && npm install --registry=${NODE_MIRROR} && npm run ${NODE_RUN_CMD}"
         }
