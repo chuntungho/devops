@@ -167,7 +167,7 @@ def call(Map config) {
                         // java project
                         // https://hub.docker.com/_/maven/
                         if (fileExists("${MODULE_DIR}/pom.xml")) {
-                            docker.image(env.MAVEN_IMAGE).inside("-v $HOME/.m2:/var/maven/.m2 -e MAVEN_CONFIG=/var/maven/.m2") {
+                            docker.image(env.MAVEN_IMAGE).inside("--entrypoint= -v $HOME/.m2:/var/maven/.m2 -e MAVEN_CONFIG=/var/maven/.m2") {
                                 sh "mvn --version"
                                 sh MAVEN_CMD
                             }
@@ -175,7 +175,7 @@ def call(Map config) {
 
                         // node project
                         if (fileExists("${MODULE_DIR}/package.json")) {
-                            docker.image(env.NODE_IMAGE).inside("-v $HOME/.npm:/home/node/.npm") {
+                            docker.image(env.NODE_IMAGE).inside("--entrypoint= -v $HOME/.npm:/home/node/.npm") {
                                 sh 'node --version'
                                 sh NODE_CMD
                             }
