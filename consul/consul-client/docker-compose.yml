@@ -1,0 +1,28 @@
+version: '3.6'
+
+# Use docker compose to mapping local port (172.17.0.1:8500) since swarm not support
+# Note that network should be attachable
+# docker network create --driver overlay --attachable consul-net
+networks:
+  consul-net:
+    external: true
+
+volumes:
+  consul-data:
+
+services:
+  # Deploy consul client as sidecar in k8s, which is not supported in swarm.
+  # To work around, deploy consul client on each swarm node, connect to consul client (172.17.0.1) inside a container.
+  consul-client:
+    image: "consul:1.13"
+    restart: unless-stopped
+    networks:
+      - consul-net
+    ports:
+      - "172.17.0.1:8500:8500"
+    environment:
+      CONSUL_BIND_INTERFACE: eth0
+      CONSUL_LOCAL_CONFIG: '{"client_addr": "0.0.0.0", "disable_update_check": true}'
+    command: [ "agent", "-retry-join", "consul-server" ]
+    volumes:
+      - consul-data:/consul/data

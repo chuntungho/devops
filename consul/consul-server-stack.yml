@@ -1,24 +1,31 @@
 version: '3.6'
 
+# Note that network should be attachable which will be attached to docker compose
+# docker network create --driver overlay --attachable consul-net
 networks:
-  app-net:
+  consul-net:
     external: true
 
 volumes:
   consul-data:
-  consul-client-data:
 
+# comment configs when deployed by portainer
 configs:
   git2consul-conf:
-    file: ./git2consul.json
+    file: ./config/git2consul.json
+  webui-conf:
+    file: ./config/consul-webui.conf
+  htpasswd-conf:
+    file: ./config/consul-auth.htpasswd
 
+# deploy consul server on each nodes by node label
 # https://stackoverflow.com/questions/54220374/consul-on-docker-swarm-with-spring-boot-clients
 services:
   # ports: 8500
   consul-peer-a: &consul-peer
-    image: "consul:1.11"
+    image: "consul:1.13"
     networks:
-      app-net:
+      consul-net:
         aliases:
           - consul-server
     environment:
@@ -35,50 +42,44 @@ services:
 
   consul-peer-b:
     <<: *consul-peer
-    command: [ "agent", "-ui", "-node", "consul-peer-b", "-retry-join", "consul-peer-a","-retry-join", "consul-peer-c" ]
+    command: [ "agent", "-node", "consul-peer-b", "-retry-join", "consul-peer-a","-retry-join", "consul-peer-c" ]
     deploy:
       placement:
         constraints:
           - "node.labels.consul-peer-name==consul-peer-b"
 
+  # enable web ui just for this peer
   consul-peer-c:
     <<: *consul-peer
-    command: [ "agent", "-node", "consul-peer-c", "-retry-join", "consul-peer-a","-retry-join", "consul-peer-b" ]
+    command: [ "agent", "-ui", "-node", "consul-peer-c", "-retry-join", "consul-peer-a","-retry-join", "consul-peer-b" ]
     deploy:
       placement:
         constraints:
           - "node.labels.consul-peer-name==consul-peer-c"
 
-  # Deploy consul client as sidecar in k8s, which is not supported in swarm.
-  # To work around, deploy consul client on each swarm node, connect to consul client (172.17.0.1) inside a container.
-  consul-client:
-    image: "consul:1.11"
+  # proxy to ui peer with basic auth
+  web-ui:
+    image: nginx:alpine
     networks:
-      app-net:
+      - consul-net
     ports:
-      - target: 8500
-        published: 8500
-        mode: host
-    environment:
-      CONSUL_BIND_INTERFACE: eth0
-      CONSUL_LOCAL_CONFIG: '{"client_addr": "0.0.0.0", "disable_update_check": true}'
-    command: [ "agent", "-ui", "-retry-join", "consul-server" ]
-    volumes:
-      - consul-client-data:/consul/data
-    deploy:
-      mode: global
-      placement:
-        constraints:
-          - "node.labels.app-server==true"
+      - "18500:8500"
+    # comment configs when deployed by portainer
+    configs:
+      - source: webui-conf
+        target: /etc/nginx/conf.d/consul.conf
+      - source: htpasswd-conf
+        target: /etc/nginx/.htpasswd
 
   git2consul-go:
     image: chuntungho/git2consul-go
     networks:
-      - app-net
+      - consul-net
+    command: ["-config", "/etc/git2consul.json", "-debug"]
+    # comment configs when deployed by portainer
     configs:
       - source: git2consul-conf
         target: /etc/git2consul.json
-    command: ["-config", "/etc/git2consul.json", "-debug"]
     deploy:
       placement:
         constraints:
