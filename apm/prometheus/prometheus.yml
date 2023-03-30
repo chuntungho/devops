@@ -6,7 +6,7 @@ global:
 alerting:
   alertmanagers:
   - follow_redirects: true
-    enable_http2: true
+    # enable_http2: true
     scheme: http
     timeout: 10s
     api_version: v2
@@ -20,11 +20,12 @@ scrape_configs:
   metrics_path: /metrics
   scheme: http
   follow_redirects: true
-  enable_http2: true
+  # enable_http2: true
   static_configs:
   - targets:
     - localhost:9090
 
+# grafana: Node Exporter Full (1860)
 - job_name: node
   proxy_url: http://10.98.59.11:13128
   static_configs:
@@ -38,18 +39,20 @@ scrape_configs:
      - 10.98.59.13:19100
      - 10.99.159.11:9100
 
+# grafana: MySQL Overview (7362)
 - job_name: mysql
   proxy_url: http://10.98.59.11:13128
   static_configs:
   - targets:
-    - 10.98.98.235:9104
+    - 10.98.59.11:19104
 
+# grafana: RabbitMQ-Overview (10991)
 - job_name: 'rabbitmq'
   proxy_url: http://10.98.59.11:13128
   static_configs:
     - targets: ['rabbit-peer-a:15692', 'rabbit-peer-b:15692', 'rabbit-peer-c:15692']
 
-
+# grafana: Redis Dashboard (763) 
 ## config for scraping the exporter itself
 - job_name: 'redis_exporter'
   static_configs:
@@ -75,7 +78,7 @@ scrape_configs:
     - target_label: __address__
       replacement: redis-exporter:9121
 
-
+# grafana: JVM (micrometer) (4701)
 - job_name: backend_services
   proxy_url: http://10.98.59.11:13128
   consul_sd_configs:
@@ -98,6 +101,7 @@ scrape_configs:
       regex: '^.*,management,.*$'
       action: keep
 
+# grafana: NGINX exporter (12708)
 - job_name: nginx
   static_configs:
   - targets: ['nginx-exporter:9113']

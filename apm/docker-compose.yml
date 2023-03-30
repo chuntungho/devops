@@ -11,7 +11,7 @@ services:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus
     ports:
-      - "9090:9090"
+      - 9090:9090
 
   grafana:
     image: grafana/grafana
@@ -34,9 +34,30 @@ services:
       - /var/run:/var/run:rw
       - /sys:/sys:ro
       - /var/lib/docker/:/var/lib/docker:ro
+  
+  # 9100
+  # deploy on each node in host mode
+  node-exporter:
+    image: prom/node-exporter
+    ports:
+      - target: 9100
+        published : 19100
+        mode: host
+    volumes:
+      - /:/rootfs:ro
+      - /etc/hostname:/etc/hostname:ro
+      - /etc/hosts:/etc/hosts:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
 
   # 9113 
   # nginx exporter based on stub_status
+  # Check if ngx_http_stub_status_module enabled:
+  # sh> nginx -V 2>&1 | grep -o with-http_stub_status_module
+  # refer to: https://nginx.org/en/docs/http/ngx_http_stub_status_module.html#stub_status
+  # location /stub_status {
+  #  stub_status on;
+  # }
   nginx-exporter:
     image: nginx/nginx-prometheus-exporter
     command:
@@ -45,3 +66,11 @@ services:
   # 9121
   redis-exporter:
     image: oliver006/redis_exporter
+
+  # 9104
+  # mysql> GRANT REPLICATION CLIENT,PROCESS ON *.* TO 'exporter'@'localhost' identified by 'password';
+  # mysql> GRANT SELECT ON performance_schema.* TO 'exporter'@'localhost';
+  mysqld-exporter:
+    image: prom/mysqld-exporter
+    environment:
+      - 'DATA_SOURCE_NAME=exporter:password@(mysql-host:3306)/'
