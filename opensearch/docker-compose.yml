@@ -64,6 +64,9 @@ services:
       - opensearch-data2:/usr/share/opensearch/data
     networks:
       - opensearch-net
+
+  # If you override opensearch_dashboards.yml settings using environment variables in your compose file, 
+  # use all uppercase letters and replace periods with underscores (for example, for opensearch.hosts, use OPENSEARCH_HOSTS)
   opensearch-dashboards:
     image: opensearchproject/opensearch-dashboards:2
     container_name: opensearch-dashboards
@@ -73,6 +76,11 @@ services:
       - "5601"
     environment:
       OPENSEARCH_HOSTS: '["https://opensearch-node1:9200","https://opensearch-node2:9200"]'
+      # disable multi-tenancy
+      # https://opensearch.org/docs/1.2/security-plugin/access-control/multi-tenancy/
+      OPENSEARCH_SECURITY_MULTITENANCY_ENABLED: 'false'
+      # uncomment below to disable sercurity for test
+      # DISABLE_SECURITY_DASHBOARDS_PLUGIN: 'true'
     networks:
       - opensearch-net
 
