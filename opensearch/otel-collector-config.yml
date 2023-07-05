@@ -1,0 +1,48 @@
+# https://opentelemetry.io/docs/collector/configuration/
+extensions:
+  basicauth/data-prepper:
+    client_auth: 
+      username: oteluser
+      password: dataprepper
+
+# Data sources: traces, metrics, logs
+receivers:
+  otlp/java-agent:
+    protocols:
+      grpc:
+
+# Data sources: traces, metrics, logs
+processors:
+  batch:
+
+exporters:
+  # Data sources: traces, metrics, logs
+  otlp/data-prepper:
+    endpoint: data-prepper:21890
+    auth:
+      authenticator: basicauth/data-prepper
+    tls:
+    #  insecure: true
+      insecure_skip_verify: true
+
+  logging:
+
+  # Data sources: metrics (beta)
+  prometheusremotewrite:
+    # For official Prometheus (e.g. running via Docker)
+    endpoint: 'http://prometheus:9090/api/v1/write'
+    tls:
+      insecure: true
+
+service:
+  extensions:
+    - basicauth/data-prepper
+  pipelines:
+    traces:
+      receivers: [otlp/java-agent]
+      processors: [batch]
+      exporters: [logging, otlp/data-prepper]
+    metrics:
+      receivers: [otlp/java-agent]
+      processors: [batch]
+      exporters: [logging, prometheusremotewrite]

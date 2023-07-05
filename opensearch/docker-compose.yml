@@ -21,7 +21,7 @@ services:
       - cluster.name=opensearch-cluster
       - node.name=opensearch-node1
       - bootstrap.memory_lock=true # along with the memlock settings below, disables swapping
-      - "OPENSEARCH_JAVA_OPTS=-Xms4g -Xmx4g" # minimum and maximum Java heap size, recommend setting both to 50% of system RAM
+      - "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g" # minimum and maximum Java heap size, recommend setting both to 50% of system RAM
       # below settings required for cluster
       - discovery.seed_hosts=opensearch-node1,opensearch-node2
       - cluster.initial_master_nodes=opensearch-node1,opensearch-node2
@@ -52,7 +52,7 @@ services:
       - discovery.seed_hosts=opensearch-node1,opensearch-node2
       - cluster.initial_master_nodes=opensearch-node1,opensearch-node2
       - bootstrap.memory_lock=true
-      - "OPENSEARCH_JAVA_OPTS=-Xms4g -Xmx4g"
+      - "OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g"
     ulimits:
       memlock:
         soft: -1
@@ -86,7 +86,7 @@ services:
 
   # fluentd for log aggregate
   fluentd-server:
-    image: fluentd-server
+    image: chuntungho/fluentd-server
     build: ./fluentd
     volumes:
       - ./fluentd/fluentd.conf:/fluentd/etc/fluent.conf
@@ -125,35 +125,30 @@ services:
     healthcheck:
       test: [ "CMD", "wget", "-q", "-O/dev/null", "http://localhost:9411/health" ]
 
-  # TODO OpenSearch SSL issue?
-  # https://github.com/apache/skywalking/tree/master/docker
-  skywalking-server:
-    image: apache/skywalking-oap-server:9.1.0
+  # https://github.com/opensearch-project/data-prepper/blob/main/docs/trace_analytics.md
+  data-prepper:
+    restart: unless-stopped
+    container_name: data-prepper
+    image: opensearchproject/data-prepper:2
+    volumes:
+      - ./data-prepper/cert:/cert
+      - ./data-prepper/pipelines.yaml:/usr/share/data-prepper/pipelines/pipelines.yaml
+      - ./data-prepper/config.yaml:/usr/share/data-prepper/config/data-prepper-config.yaml
     networks:
       - opensearch-net
     ports:
-      - "11800:11800"
-      - "12800:12800"
-    healthcheck:
-      test: [ "CMD-SHELL", "/skywalking/bin/swctl health" ]
-    environment:
-      JAVA_OPTS: "-Xms512m -Xmx1024m"
-      SW_HEALTH_CHECKER: default
-      SW_STORAGE: elasticsearch
-      SW_STORAGE_ES_CLUSTER_NODES: opensearch-node1:9200,opensearch-node2:9200
-      SW_STORAGE_ES_HTTP_PROTOCOL: https
-      SW_ES_USER: admin
-      SW_ES_PASSWORD: admin
-      SW_STORAGE_ES_SSL_JKS_PATH: /var/opensearch.jks
-      SW_STORAGE_ES_SSL_JKS_PASS: "a123456"
-      # receiver-zipkin just store rather than analyze zipkin traces.
-      # SW_RECEIVER_ZIPKIN: default
+      - "21890:21890"
 
-  skywalking-ui:
-    image: apache/skywalking-ui:9.1.0
+  # It is better to deploy it on the client side
+  otel-collector:
+    restart: unless-stopped
+    container_name: otel-collector
+    image: otel/opentelemetry-collector-contrib:0.81.0
+    command: [ "--config=/etc/otel-collector-config.yml" ]
+    # https://opentelemetry.io/docs/collector/configuration/
+    volumes:
+      - ./otel-collector-config.yml:/etc/otel-collector-config.yml
     networks:
       - opensearch-net
     ports:
-      - "8080:8080"
-    environment:
-      SW_OAP_ADDRESS: http://skywalking-server:12800
+      - "4317:4317"  # otlp grpc port

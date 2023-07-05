@@ -14,9 +14,9 @@ Gitlab + Nexus + Jenkins
 
 Refer to http://peter.bourgon.org/blog/2017/02/21/metrics-tracing-and-logging.html
 
-Logging: OpenSearch + Fluentd (Fluent-bit)
+Logging: Fluentd (Fluent-bit) + OpenSearch
 
-Tracing: OpenZipkin
+Tracing: OpenTelemetry + Data-prepper
 
 Monitoring: Promethues + Grafana
 

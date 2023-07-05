@@ -213,7 +213,7 @@ def call(Map config) {
 
                         // push image to registry with user/password
                         docker.withRegistry("${REGISTRY_URL}", "${REGISTRY_CREDENTIALS_ID}") {
-                            def image = docker.build("${IMAGE_WITH_TAG}", "-f ${dockerFile} ${MODULE_DIR}")
+                            def image = docker.build("${IMAGE_WITH_TAG}", "--build-arg IMAGE_NAME=${IMAGE_NAME} -f ${dockerFile} ${MODULE_DIR}")
                             image.push()
                             if (env.CURRENT_ENV == 'prod') {
                                 image.push("latest")
