@@ -68,9 +68,12 @@ services:
     image: oliver006/redis_exporter
 
   # 9104
+  # https://github.com/prometheus/mysqld_exporter
   # mysql> GRANT REPLICATION CLIENT,PROCESS ON *.* TO 'exporter'@'localhost' identified by 'password';
   # mysql> GRANT SELECT ON performance_schema.* TO 'exporter'@'localhost';
   mysqld-exporter:
     image: prom/mysqld-exporter
-    environment:
-      - 'DATA_SOURCE_NAME=exporter:password@(mysql-host:3306)/'
+    command:
+      - '--config.my-cnf=/etc/my.cnf'
+    volumes:
+      - ./my.cnf:/etc/my.cnf

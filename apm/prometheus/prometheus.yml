@@ -1,4 +1,3 @@
-# TODO mask ip
 global:
   scrape_interval: 15s
   scrape_timeout: 10s
@@ -27,28 +26,30 @@ scrape_configs:
 
 # grafana: Node Exporter Full (1860)
 - job_name: node
-  proxy_url: http://10.98.59.11:13128
+  proxy_url: http://proxy-host:13128
   static_configs:
    - targets:
-     - 10.98.98.235:9100
-     - 10.98.98.232:19100
-     - 10.98.98.233:19100
-     - 10.98.98.237:19100
-     - 10.98.59.11:19100
-     - 10.98.59.12:19100
-     - 10.98.59.13:19100
-     - 10.99.159.11:9100
+     - node-ip:9100
 
 # grafana: MySQL Overview (7362)
 - job_name: mysql
-  proxy_url: http://10.98.59.11:13128
+  proxy_url: http://proxy-host:13128
   static_configs:
-  - targets:
-    - 10.98.59.11:19104
+    - targets:
+      - server1-ip:3306
+      - server2-ip:3306
+  relabel_configs:
+    - source_labels: [__address__]
+      target_label: __param_target
+    - source_labels: [__param_target]
+      target_label: instance
+    - target_label: __address__
+      # The mysqld_exporter host:port
+      replacement: mysqld-exporter:19104
 
 # grafana: RabbitMQ-Overview (10991)
 - job_name: 'rabbitmq'
-  proxy_url: http://10.98.59.11:13128
+  proxy_url: http://proxy-host:13128
   static_configs:
     - targets: ['rabbit-peer-a:15692', 'rabbit-peer-b:15692', 'rabbit-peer-c:15692']
 
@@ -63,12 +64,12 @@ scrape_configs:
 - job_name: 'redis_exporter_targets'
   static_configs:
   - targets:
-    - redis://10.98.59.11:6001
-    - redis://10.98.59.11:6002
-    - redis://10.98.59.12:6001
-    - redis://10.98.59.12:6002
-    - redis://10.98.59.13:6001
-    - redis://10.98.59.13:6002
+    - redis://redis-node1:6001
+    - redis://redis-node1:6002
+    - redis://redis-node2:6001
+    - redis://redis-node2:6002
+    - redis://redis-node3:6001
+    - redis://redis-node3:6002
   metrics_path: /scrape
   relabel_configs:
     - source_labels: [__address__]
@@ -80,10 +81,10 @@ scrape_configs:
 
 # grafana: JVM (micrometer) (4701)
 - job_name: backend_services
-  proxy_url: http://10.98.59.11:13128
+  proxy_url: http://proxy-host:13128
   consul_sd_configs:
     - server: consul-server:8500
-      proxy_url: http://10.98.59.11:13128
+      proxy_url: http://proxy-host:13128
   relabel_configs:
     - source_labels: [__meta_consul_service]
       separator: ;
