@@ -1,0 +1,19 @@
+FROM chuntungho/jdk11-slim-otel-agent:1.27
+LABEL version="1.0" \
+    description="Java application with open telemetry java agent" \
+    maintainer="ho@chuntung.com"
+
+# multi-arguments available after 20.10
+ARG SOURCE_FILE="target/*.jar"
+ARG IMAGE_NAME="app"
+
+# App used env variables
+ENV APP_ENV="test" CONSUL_HOST="consul-server"
+ENV SERVICE_NAME="${IMAGE_NAME}"
+
+VOLUME ["/tmp"]
+
+WORKDIR /opt/java
+
+# the mutable line at end
+COPY ${SOURCE_FILE} app.jar

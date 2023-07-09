@@ -1,0 +1,38 @@
+# https://spring.io/guides/topicals/spring-boot-docker
+# based on openjdk11 hotspot
+FROM adoptopenjdk/openjdk11:alpine-slim
+LABEL version="1.27" \
+    description="idk 11 with open telemetry java agent 1.27" \
+    maintainer="ho@chuntung.com"
+
+ENV OTEL_SERVICE_NAME="app" JAVA_OPTS="-server -Xms512m -Xmx512m"
+# For spring webmvc, just enable tomcat/spring-webmvc/spring-web/executors/logback-mdc
+ENV OTLP_ENDPOINT="http://otel-collector:4317" OTEL_OPTS="-Dotel.instrumentation.common.default-enabled=false -Dotel.instrumentation.tomcat.enabled=true -Dotel.instrumentation.spring-webmvc.enabled=true -Dotel.instrumentation.spring-web.enabled=true -Dotel.instrumentation.executors.enabled=true -Dotel.instrumentation.logback-mdc.enabled=true"
+# For spring webflux, to enable netty/ractor/ractor-netty/spring-webflux/logback-mdc
+# OTEL_OPTS="-Dotel.instrumentation.common.default-enabled=false -Dotel.instrumentation.netty.enabled=true -Dotel.instrumentation.reactor.enabled=true -Dotel.instrumentation.reactor-netty.enabled=true -Dotel.instrumentation.spring-webflux.enabled=true -Dotel.instrumentation.logback-mdc.enabled=true"
+
+VOLUME ["/tmp"]
+
+WORKDIR /opt/java
+
+# https://opentelemetry.io/docs/instrumentation/java/automatic/agent-config/
+ADD https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v1.27.0/opentelemetry-javaagent.jar .
+
+RUN printf '#!/bin/sh\n\
+set -x\n\
+exec java \
+-Dfile.encoding=UTF-8 \
+-Duser.timezone=GMT+8 \
+-Djava.awt.headless=true \
+-Djava.net.preferIPv4Stack=true \
+-XX:+HeapDumpOnOutOfMemoryError \
+-XX:HeapDumpPath=/tmp/${OTEL_SERVICE_NAME}-heapdump.hprof  \
+-XX:+PrintCommandLineFlags \
+-javaagent:/opt/java/opentelemetry-javaagent.jar \
+-Dotel.service.name=${OTEL_SERVICE_NAME} \
+-Dotel.exporter.otlp.endpoint=${OTLP_ENDPOINT} \
+${OTEL_OPTS} \
+${JAVA_OPTS} \
+-jar app.jar $@' >> entrypoint.sh && chmod 755 entrypoint.sh
+
+ENTRYPOINT ["./entrypoint.sh"]
