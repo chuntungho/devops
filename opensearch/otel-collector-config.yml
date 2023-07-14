@@ -30,6 +30,7 @@ exporters:
   # Data sources: metrics (beta)
   prometheusremotewrite:
     # For official Prometheus (e.g. running via Docker)
+    # argument: --enable-feature=remote-write-receiver
     endpoint: 'http://prometheus:9090/api/v1/write'
     tls:
       insecure: true

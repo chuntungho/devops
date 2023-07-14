@@ -7,8 +7,10 @@ services:
   # /etc/prometheus/prometheus.yml
   prometheus:
     image: prom/prometheus
-    # enable remote write for otel-collector
-    command: "--enable-feature=remote-write-receiver"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+1     - '--storage.tsdb.path=/prometheus'
+      - '--enable-feature=remote-write-receiver'
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
       - prometheus-data:/prometheus

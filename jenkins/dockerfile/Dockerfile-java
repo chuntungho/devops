@@ -9,7 +9,7 @@ ARG IMAGE_NAME="app"
 
 # App used env variables
 ENV APP_ENV="test" CONSUL_HOST="consul-server"
-ENV SERVICE_NAME="${IMAGE_NAME}"
+ENV OTEL_SERVICE_NAME="${IMAGE_NAME}"
 
 VOLUME ["/tmp"]
 
