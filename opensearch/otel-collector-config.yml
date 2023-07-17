@@ -14,6 +14,18 @@ receivers:
 # Data sources: traces, metrics, logs
 processors:
   batch:
+  # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/main/processor/tailsamplingprocessor
+  # filter out health check or others
+  # TODO apply latency/probabilistic policy over filter
+  tail_sampling:
+    policies:
+      - name: filter-out-noisy
+        type: string_attribute
+        string_attribute:
+          key: http.target
+          values: [\/metrics, \/actuator*, \/health, favicon\.ico]
+          enabled_regex_matching: true
+          invert_match: true
 
 exporters:
   # Data sources: traces, metrics, logs
@@ -41,8 +53,8 @@ service:
   pipelines:
     traces:
       receivers: [otlp/java-agent]
-      processors: [batch]
-      exporters: [logging, otlp/data-prepper]
+      processors: [tail_sampling, batch]
+      exporters: [otlp/data-prepper]
     metrics:
       receivers: [otlp/java-agent]
       processors: [batch]
