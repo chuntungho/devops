@@ -9,7 +9,7 @@ services:
     image: prom/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
-1     - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.path=/prometheus'
       - '--enable-feature=remote-write-receiver'
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
