@@ -1,0 +1,49 @@
+version: '3'
+services:
+  docker-fe:
+    image: "chuntungho/doris:2.0.1-fe-x86_64"
+    build:
+      context: ./fe
+      dockerfile: Dockerfile
+    container_name: "doris-fe-2"
+    hostname: "fe"
+    environment:
+      - FE_SERVERS=fe1:172.20.80.2:9010
+      - FE_ID=1
+    ports:
+      - 8030:8030
+      - 9030:9030
+    volumes:
+      - ./fe/doris-meta:/opt/apache-doris/fe/doris-meta
+      - ./fe/log:/opt/apache-doris/fe/log
+    networks:
+      doris_net:
+        ipv4_address: 172.20.80.2
+        
+  docker-be:
+    image: "chuntungho/doris:2.0.1-be-x86_64"
+    build:
+      context: ./be
+      dockerfile: Dockerfile
+    container_name: "doris-be-2"
+    hostname: "be"
+    depends_on:
+      - docker-fe
+    environment:
+      - FE_SERVERS=fe1:172.20.80.2:9010
+      - BE_ADDR=172.20.80.3:9050
+    ports:
+      - 8040:8040
+    volumes:
+      - ./be/storage:/opt/apache-doris/be/storage
+      - ./be/script:/docker-entrypoint-initdb.d
+      - ./be/log:/opt/apache-doris/be/log
+    networks:
+      doris_net:
+        ipv4_address: 172.20.80.3
+
+networks:
+  doris_net:
+    ipam:
+      config:
+        - subnet: 172.20.80.0/16
