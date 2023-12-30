@@ -1,12 +1,13 @@
 version: '3'
 services:
   docker-fe:
-    image: "chuntungho/doris:2.0.1-fe-x86_64"
-    build:
-      context: ./fe
-      dockerfile: Dockerfile
+    # image: "chuntungho/doris-fe:2.0.3-x86_64"
+    image: "lgq1999/doris-fe:2.0.3"
+    # build:
+    #   context: ./fe
+    #   dockerfile: Dockerfile
     container_name: "doris-fe-2"
-    hostname: "fe"
+    hostname: "fe1"
     environment:
       - FE_SERVERS=fe1:172.20.80.2:9010
       - FE_ID=1
@@ -14,17 +15,20 @@ services:
       - 8030:8030
       - 9030:9030
     volumes:
-      - ./fe/doris-meta:/opt/apache-doris/fe/doris-meta
-      - ./fe/log:/opt/apache-doris/fe/log
+      - ${HOME}/data/doris/jdbc_drivers:/opt/apache-doris/fe/jdbc_drivers
+      - ${HOME}/data/doris/custom_lib:/opt/apache-doris/fe/custom_lib
+      - ${HOME}/data/doris/fe/doris-meta:/opt/apache-doris/fe/doris-meta
+      - ${HOME}/data/doris/fe/log:/opt/apache-doris/fe/log
     networks:
       doris_net:
         ipv4_address: 172.20.80.2
         
   docker-be:
-    image: "chuntungho/doris:2.0.1-be-x86_64"
-    build:
-      context: ./be
-      dockerfile: Dockerfile
+    # image: "chuntungho/doris-be:2.0.3-x86_64"
+    image: "lgq1999/doris-be:2.0.3"
+    # build:
+    #   context: ./be
+    #   dockerfile: Dockerfile
     container_name: "doris-be-2"
     hostname: "be"
     depends_on:
@@ -35,9 +39,10 @@ services:
     ports:
       - 8040:8040
     volumes:
-      - ./be/storage:/opt/apache-doris/be/storage
-      - ./be/script:/docker-entrypoint-initdb.d
-      - ./be/log:/opt/apache-doris/be/log
+      - ${HOME}/data/doris/jdbc_drivers:/opt/apache-doris/be/jdbc_drivers
+      - ${HOME}/data/doris/custom_lib:/opt/apache-doris/be/custom_lib
+      - ${HOME}/data/doris/be/storage:/opt/apache-doris/be/storage
+      - ${HOME}/data/doris/be/log:/opt/apache-doris/be/log
     networks:
       doris_net:
         ipv4_address: 172.20.80.3

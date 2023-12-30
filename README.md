@@ -2,9 +2,6 @@
 
 Stuffs about DevOps
 
-## API management
-
-Yapi
 
 ## CI/CD
 
@@ -22,4 +19,14 @@ Monitoring: Promethues + Grafana
 
 ## Middleware
 
-Consul + Redis + ElasticSearch + RabbitMQ
+Consul, Zookeeper, Nacos
+
+ElasticSearch
+
+RabbitMQ
+
+## Database
+
+MySQL, SQL Server
+
+Doris
