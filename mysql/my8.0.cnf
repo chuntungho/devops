@@ -1,0 +1,17 @@
+[mysqld]
+# before initialization
+lower_case_table_names = 1
+
+# enable bin log
+log_bin = mysql-bin
+binlog_format = ROW
+# 30 days: 3600 * 24 * 30 = 2592000
+binlog_expire_logs_seconds = 2592000
+
+# flush in direct mode to avoid double buffer
+innodb_flush_method = O_DIRECT
+
+# tx isolation level
+transaction-isolation = READ-COMMITTED
+
+max_connections = 1000

@@ -1,0 +1,21 @@
+[mysqld]
+innodb-file-per-table = ON
+
+# before initialization
+lower_case_table_names = 1
+
+# enable bin log
+log_bin = mysql-bin
+binlog_format = ROW
+expire_logs_days = 30
+
+# required when log_bin enabled for mysql 5
+server-id = 1001
+
+# flush in direct mode to avoid double buffer
+innodb_flush_method = O_DIRECT
+
+# tx isolation level
+transaction-isolation = READ-COMMITTED
+
+max_connections = 1000
