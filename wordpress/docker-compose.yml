@@ -25,7 +25,7 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - wp_data:/usr/src/wordpress
+      - wp_data:/var/www/html
     expose:
       - 9000
     # restart: always
@@ -39,7 +39,7 @@ services:
     image: nginx
     volumes:
       # static file require this mount
-      - wp_data:/usr/src/wordpress
+      - wp_data:/var/www/html
       - ./wordpress.conf:/etc/nginx/conf.d/default.conf
     ports:
       - "80:80"
