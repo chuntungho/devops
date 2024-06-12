@@ -2,12 +2,20 @@ version: '3.6'
 
 volumes:
   redis-data:
+  insight-data:
 
 services:
-  redis:
+  redis-std:
     image: redis:5.0.9-alpine
     volumes:
       - redis-data:/data
     ports:
       - 6379:6379
     command: ["redis-server", "--requirepass redisPwd"]
+  
+  redis-insight:
+    image: redis/redisinsight
+    volumes:
+      - insight-data:/data
+    ports:
+      - 5540:5540
