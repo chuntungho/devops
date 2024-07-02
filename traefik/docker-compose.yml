@@ -24,11 +24,11 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./conf/traefik.yml:/etc/traefik/traefik.yml
-      - ./conf/acme.json:/acme.json  # for saving cert key
+      - ./conf/acme.json:/etc/acme.json  # for saving cert key
    
-   whoami:
-     image: traefik/whoami
-     # target host: whoami.docker.localhost
-     container_name: whoami
-     labels:
-       - traefik.http.routers.whoami.rule=Host(`whoami.docker.localhost`)
+  whoami:
+    image: traefik/whoami
+    # target host: whoami.docker.localhost
+    container_name: whoami
+    labels:
+      - traefik.http.routers.whoami.rule=Host(`whoami.docker.localhost`)

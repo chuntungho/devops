@@ -13,7 +13,7 @@ certificatesResolvers:
     acme:
       email: youremail@email.com
       # default acme.json
-      storage: acme.json
+      storage: /etc/acme.json
       # https://doc.traefik.io/traefik/https/acme/#dnschallenge
       # cloudflare dns challenge
       dnsChallenge:
