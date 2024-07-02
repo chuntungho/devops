@@ -1,0 +1,39 @@
+# Docker configuration backend
+providers:
+  docker:
+    # for local test
+    defaultRule: "Host(`{{ trimPrefix `/` .Name }}.docker.localhost`)"
+
+# API and dashboard configuration
+api:
+  insecure: true
+
+certificatesResolvers:
+  myresolver:
+    acme:
+      email: youremail@email.com
+      # default acme.json
+      storage: acme.json
+      # https://doc.traefik.io/traefik/https/acme/#dnschallenge
+      # cloudflare dns challenge
+      dnsChallenge:
+        provider: cloudflare
+
+entryPoints:
+  websecure:
+    address: ':443'
+    http:
+      tls:
+        certResolver: myresolver
+
+http:
+  routers:
+    # define dummy router to generate cert
+    foo:
+      rule: "Host(`yourdomain.com`) && Path (`dummy`)"
+      tls:
+        certResolver: "myresolver"
+        domains:
+          - main: "yourdomain.com"
+            sans:
+              - "*.yourdomain.com"
