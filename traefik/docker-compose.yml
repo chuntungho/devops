@@ -6,10 +6,9 @@ services:
     container_name: traefik
     restart: unless-stopped
     labels:
-      traefik.enable: "true"
-      traefik.frontend.rule: "Host:traefik.docker.localhost"
-      traefik.frontend.headers.STSSeconds: 315360000
-      traefik.port: 8080
+      - traefik.http.routers.traefik.rule=Host(`traefik.docker.localhost`)
+      - traefik.http.routers.traefik.service=traefik@docker
+      - traefik.http.services.traefik.loadbalancer.server.port=8080
     ports:
       - target: 80
         published: 80
