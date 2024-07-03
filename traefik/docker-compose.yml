@@ -1,5 +1,8 @@
 version: "3.8"
 
+volumes:
+  acme:
+  
 services:
   traefik:
     image: traefik
@@ -23,7 +26,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./conf/traefik.yml:/etc/traefik/traefik.yml
-      - ./conf/acme.json:/etc/acme.json  # for saving cert key
+      - acme:/acme # for saving cert key
    
   whoami:
     image: traefik/whoami

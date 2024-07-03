@@ -1,19 +1,19 @@
 version: '3.8'
 services:
-    # https://developers.cloudflare.com/fundamentals/reference/network-ports/
-    nginx-ui:
-        image: 'uozi/nginx-ui:latest'
-        stdin_open: true
-        tty: true
-        container_name: nginx-ui
-        restart: always
-        environment:
-            - TZ=Asia/Shanghai
-        volumes:
-            - './nginx-conf:/etc/nginx/conf.d'
-            - './nginx-ui:/etc/nginx-ui'
-        ports:
-            - 80:80
-            - 443:443
-            - 8443:443
-            - 2096:2096
+  # https://developers.cloudflare.com/fundamentals/reference/network-ports/
+  nginx-ui:
+    image: 'uozi/nginx-ui:latest'
+    stdin_open: true
+    tty: true
+    container_name: nginx-ui
+    restart: always
+    environment:
+        - TZ=Asia/Shanghai
+    volumes:
+        - './nginx:/etc/nginx'
+        - './nginx-ui:/etc/nginx-ui'
+    ports:
+        - 80:80
+        - 443:443
+        - 8443:443
+        - 2096:2096
