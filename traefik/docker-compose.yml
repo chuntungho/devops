@@ -10,8 +10,9 @@ services:
     restart: unless-stopped
     labels:
       - traefik.http.routers.traefik.rule=Host(`traefik.docker.localhost`)
-      - traefik.http.routers.traefik.service=traefik@docker
-      - traefik.http.services.traefik.loadbalancer.server.port=8080
+      - traefik.http.routers.traefik.service=api@internal
+      - traefik.http.routers.traefik.middlewares=basic-auth
+      - traefik.http.middlewares.basic-auth.basicauth.users=admin:$$apr1$$vO3/IDvg$$JrbhU9NSQub83/mQu9/fP1 # admin/pasword
     ports:
       - target: 80
         published: 80
