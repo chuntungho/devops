@@ -1,0 +1,11 @@
+# Dynamic configuration
+# https://doc.traefik.io/traefik/v3.0/https/tls/
+tls:
+  stores:
+    default:
+      defaultGeneratedCert:
+        resolver: myresolver
+        domain:
+          main: yourdomain.com
+          sans:
+            - "*.yourdomain.com"

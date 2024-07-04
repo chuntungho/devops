@@ -25,7 +25,7 @@ services:
       - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./conf/traefik.yml:/etc/traefik/traefik.yml
+      - ./conf/:/etc/traefik/
       - acme:/acme # for saving cert key
    
   whoami:

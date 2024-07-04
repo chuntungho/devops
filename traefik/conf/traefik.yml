@@ -1,8 +1,12 @@
-# Docker configuration backend
+# Static configuration
+# https://doc.traefik.io/traefik/v3.0/providers/overview/
 providers:
   docker:
     # for local test
     defaultRule: "Host(`{{ trimPrefix `/` .Name }}.docker.localhost`)"
+  file:
+    # form default cert
+    filename: /etc/traefik/dynamic.yml
 
 # API and dashboard configuration
 api:
@@ -18,6 +22,8 @@ certificatesResolvers:
       # cloudflare dns challenge
       dnsChallenge:
         provider: cloudflare
+        #resolvers:
+        #  - 1.1.1.1:53
 
 entryPoints:
   web:
@@ -27,14 +33,3 @@ entryPoints:
     http:
       tls:
         certResolver: myresolver
-
-tls:
-  stores:
-    default:
-      defaultGeneratedCert:
-        resolver: myresolver
-        domain:
-          main: example.org
-          sans:
-            - foo.example.org
-            - bar.example.org
